@@ -1,4 +1,4 @@
-package pcl;
+package com.net.util.print;
 
 
 import org.apache.commons.lang3.StringUtils;
@@ -28,6 +28,7 @@ public class PrintCommUtil {
         try {
             socket = new Socket();
             if (port == null || port == 0) {
+                port = PRINT_PORT;
                 socket.connect(new InetSocketAddress(ip, PRINT_PORT), 1500);
             } else {
                 socket.connect(new InetSocketAddress(ip, port), 1500);
@@ -109,7 +110,7 @@ public class PrintCommUtil {
      */
     public void printImage(String data, InputStream ins) throws Exception {
         QRCodeUtil qrCodeUtil = new QRCodeUtil();
-        BufferedImage qrImage = qrCodeUtil.qrCode(data, ins, true);
+        BufferedImage qrImage = qrCodeUtil.createImage(data, ins, true);
         imageAndLR(qrImage, 0x87, 0x00);
     }
 

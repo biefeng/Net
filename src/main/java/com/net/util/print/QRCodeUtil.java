@@ -1,4 +1,4 @@
-package pcl;
+package com.net.util.print;
 
 
 import com.google.zxing.*;
@@ -32,36 +32,13 @@ public class QRCodeUtil {
     // LOGO高度
     private static final int HEIGHT = 60;
 
-    public BufferedImage qrCode(String content, InputStream ins, boolean needCompress) throws Exception {
-        return qrCode(content, ins, needCompress, DEFAULT_QRCODE_SIZE);
+    public BufferedImage createImage(String content, InputStream ins, boolean needCompress) throws Exception{
+            return createImage(content,ins,needCompress,DEFAULT_QRCODE_SIZE);
     }
-
-    public BufferedImage code39(String content, int size) throws WriterException {
-
-        Hashtable<EncodeHintType, Object> hints = new Hashtable<>();
-        hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H);
-        hints.put(EncodeHintType.CHARACTER_SET, CHARSET);
-        hints.put(EncodeHintType.MARGIN, 1);
-        BitMatrix bitMatrix = new MultiFormatWriter().encode(content,
-                BarcodeFormat.CODE_39, size, size, hints);
-        int width = bitMatrix.getWidth();
-        int height = bitMatrix.getHeight();
-        BufferedImage image = new BufferedImage(width, height,
-                BufferedImage.TYPE_BYTE_BINARY);
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                image.setRGB(x, y, bitMatrix.get(x, y) ? 0xFF000000
-                        : 0xFFFFFFFF);
-            }
-        }
-
-        return image;
-    }
-
-    public BufferedImage qrCode(String content, InputStream ins,
-                                boolean needCompress, Integer size) throws Exception {
-        qrCodeSize = size;
-        Hashtable<EncodeHintType, Object> hints = new Hashtable<>();
+    public BufferedImage createImage(String content, InputStream ins,
+                                     boolean needCompress,Integer size) throws Exception {
+        qrCodeSize=size;
+        Hashtable<EncodeHintType, Object> hints = new Hashtable<EncodeHintType, Object>();
         hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H);
         hints.put(EncodeHintType.CHARACTER_SET, CHARSET);
         hints.put(EncodeHintType.MARGIN, 1);
@@ -77,7 +54,7 @@ public class QRCodeUtil {
                         : 0xFFFFFFFF);
             }
         }
-        if (ins == null) {
+        if (ins == null ) {
             return image;
         }
         // 插入图片
@@ -89,11 +66,11 @@ public class QRCodeUtil {
      * 插入LOGO
      *
      * @param source       二维码图片
-     * @param ins          LOGO图片地址
+     * @param ins      LOGO图片地址
      * @param needCompress 是否压缩
      * @throws Exception
      */
-    private void insertImage(BufferedImage source, InputStream ins,
+    private void insertImage(BufferedImage source, InputStream ins ,
                              boolean needCompress) throws Exception {
 
         Image src = ImageIO.read(ins);
@@ -138,7 +115,7 @@ public class QRCodeUtil {
     public void encode(String content, String imgPath, String destPath,
                        boolean needCompress) throws Exception {
         FileInputStream fins = new FileInputStream(imgPath);
-        BufferedImage image = qrCode(content, fins,
+        BufferedImage image = createImage(content, fins,
                 needCompress);
         mkdirs(destPath);
         String file = new Random().nextInt(99999999) + ".jpg";
@@ -210,7 +187,7 @@ public class QRCodeUtil {
     public void encode(String content, String imgPath,
                        OutputStream output, boolean needCompress) throws Exception {
         FileInputStream fins = new FileInputStream(imgPath);
-        BufferedImage image = qrCode(content, fins,
+        BufferedImage image = createImage(content, fins,
                 needCompress);
         ImageIO.write(image, FORMAT_NAME, output);
     }
@@ -264,6 +241,9 @@ public class QRCodeUtil {
 
     public static void main(String[] args) throws Exception {
 
+        QRCodeUtil util = new QRCodeUtil();
+        String text = "http://www.cnblogs.com/qianxiaoruofeng/";
+        util.encode(text, "d:/doc/t11_logo.png", new FileOutputStream("d:/doc/qrim.png"), true);
 
 
     }

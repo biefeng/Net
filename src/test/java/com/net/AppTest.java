@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 import com.alibaba.fastjson.JSON;
 import com.net.util.StringUtils;
 import org.junit.Test;
+import zpl.DPPrint;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -297,7 +298,7 @@ public class AppTest {
     @Test
     public void name9() {
         LocalDateTime dateTime = LocalDateTime.now();
-        System.out.println(dateTime.getYear()+"/"+dateTime.getMonth()+"/"+dateTime.getDayOfMonth()+" "+dateTime.getHour()+":"+dateTime.getMinute()+":"+dateTime.getSecond());
+        System.out.println(dateTime.getYear() + "/" + dateTime.getMonth() + "/" + dateTime.getDayOfMonth() + " " + dateTime.getHour() + ":" + dateTime.getMinute() + ":" + dateTime.getSecond());
     }
 
     @Test
@@ -316,7 +317,6 @@ public class AppTest {
     }
 
 
-
     @Test
     public void name12() {
         String str = "101";
@@ -326,14 +326,28 @@ public class AppTest {
 
     @Test
     public void name13() {
-        System.out.println("123".replaceAll(""," "));
-        System.out.println(StringUtils.intStrToAscii("4",16));
+        System.out.println("123".replaceAll("", " "));
+        System.out.println(StringUtils.intStrToAscii("4", 16));
     }
 
 
     @Test
     public void name14() {
         System.out.println(LocalDateTime.now().toString());
+    }
+
+
+    @Test
+    public void name15() {
+        System.out.println(Integer.toHexString(515));
+
+        System.out.println(Integer.toHexString(212));
+    }
+
+
+    @Test
+    public void name16() {
+        DPPrint.fromDecToHex(515);
     }
 }
 

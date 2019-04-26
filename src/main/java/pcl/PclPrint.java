@@ -330,4 +330,41 @@ public class PclPrint {
     }
 
 
+    public void geneTemplate(){
+        String uelS = "1B 25 2D  31 32 33 34 35 58";
+        String lfS = "0A";
+        String lf_cr_str = " \r\n";
+        String prj_str = "@PJL ";
+        String enter_cmd = "@PJL ENTER LANGUAGE = PCL";
+        String comment_str = "@PJL COMMENT Beginning PostScript Job";
+        String reset_cmd = "1B 45";
+
+        byte esc_b = 27;
+        byte[] uel_b = fromHexStrtoByteArr(uelS);
+        byte[] lf_b = fromHexStrtoByteArr(lfS);
+        byte[] lf_cr_b = lf_cr_str.getBytes();
+        byte[] reset_cmd_b = fromHexStrtoByteArr(reset_cmd);
+        try (FileOutputStream fos = new FileOutputStream("d:/doc/hhhhh.pcl")) {
+            BufferedOutputStream bos = new BufferedOutputStream(fos);
+            bos.write(uel_b);
+            bos.write(prj_str.getBytes());
+            bos.write(lf_cr_b);
+            bos.write(comment_str.getBytes());
+            bos.write(lf_cr_b);
+            bos.write(enter_cmd.getBytes());
+            bos.write(lf_cr_b);
+            bos.write(esc_b);
+            bos.write("E".getBytes());
+            bos.write("````````PCL PRINT JOB``````````".getBytes());
+            bos.write(esc_b);
+            bos.write("E".getBytes());
+            bos.write(uel_b);
+            bos.flush();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
