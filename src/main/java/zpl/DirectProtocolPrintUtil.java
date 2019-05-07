@@ -1,6 +1,7 @@
 package zpl;
 
 
+import com.aspose.cells.*;
 import com.google.zxing.WriterException;
 import pcl.QRCodeUtil;
 
@@ -10,6 +11,8 @@ import java.awt.image.WritableRaster;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /*
@@ -107,6 +110,7 @@ public class DirectProtocolPrintUtil {
      * @param image
      */
     public void printImage(int x, int y, BufferedImage image) {
+
         try {
             byte[] data = rllFormat(image);
             StringBuffer sb = new StringBuffer();
@@ -166,8 +170,15 @@ public class DirectProtocolPrintUtil {
         return sb.toString();
     }
 
-    //将单色位图用RLL算法进行压缩
+    /**
+     * 将单色位图用RLL算法进行压缩
+     *
+     * @param image
+     * @return
+     * @throws IOException
+     */
     public byte[] rllFormat(BufferedImage image) throws IOException {
+        //TODO  未对重复行的数据进行压缩
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         WritableRaster raster = image.getRaster();
         int width = image.getWidth();
@@ -217,6 +228,7 @@ public class DirectProtocolPrintUtil {
                     }
                     if (changed) {
                         count = 1;
+
                     } else {
                         count = 0;
                     }
@@ -268,11 +280,15 @@ public class DirectProtocolPrintUtil {
 
     public static void main(String[] args) throws IOException, WriterException {
         QRCodeUtil util = new QRCodeUtil();
-        BufferedImage image = ImageIO.read(new File("E:\\workspace\\idea\\Net\\src\\main\\resources\\test.bmp"));//util.code39("121", 70);
-        //ImageIO.write(image, "bmp", new FileOutputStream("d:/doc/code_39.bmp"));
+        /*BufferedImage image = ImageIO.read(new File("E:\\workspace\\idea\\Net\\src\\main\\resources\\test.bmp"));//util.code39("121", 70);
+        ImageIO.write(image, "bmp", new FileOutputStream("d:/doc/code_39.bmp"));*/
         DirectProtocolPrintUtil dpPrintUtil = new DirectProtocolPrintUtil("10.0.0.123");
-        dpPrintUtil.printImage(200, 200, image);
+
+        dpPrintUtil.printCODE39(100, 100, "123" +
+                "");
 
         dpPrintUtil.doPrint();
     }
+
+
 }
