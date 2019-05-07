@@ -1,16 +1,16 @@
 package pcl;
 
-import com.net.util.StringUtils;
-import com.sun.org.apache.bcel.internal.generic.IF_ACMPEQ;
+
+import com.aspose.cells.*;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBuffer;
-import java.awt.image.DataBufferByte;
 import java.awt.image.WritableRaster;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  *@Author BieFeNg
@@ -18,6 +18,25 @@ import java.net.Socket;
  *@DESC
  */
 public class PclPrint {
+
+    private final BufferedOutputStream bos;
+
+    private static final int DEFAULT_PORT = 9100;
+
+    public PclPrint(String ip) {
+        this(ip, DEFAULT_PORT);
+    }
+
+    public PclPrint(String ip, int port) {
+        try {
+            Socket socket = new Socket();
+            socket.connect(new InetSocketAddress(ip, 9100));
+            OutputStream outputStream = socket.getOutputStream();// new FileOutputStream("d:/doc/ggggggggggggggggggggg.pcl");//
+            bos = new BufferedOutputStream(outputStream);
+        } catch (Exception e) {
+            throw new RuntimeException("***************打印机连接失败，IP: " + ip + ", PORT: " + port);
+        }
+    }
 
     private static final int DEFAULT_BYTE_LEN = 8;
 
@@ -30,8 +49,10 @@ public class PclPrint {
     private String reset_cmd = "1B 45";  // ESCE
     private static String b4w = "1B 2A 62 34 57";
 
-    private byte[] bytes1 = StringUtils.fromHexStrtoByteArr(b4w);
-    private byte esc_b = 27;
+
+    private byte[] bytes1 = fromHexStrtoByteArr(b4w);
+    private static byte star = 42;// *
+    private static byte esc_b = 27; //ESC
     private byte[] uel_b = fromHexStrtoByteArr(uelS);
     private byte[] lf_b = fromHexStrtoByteArr(lfS);
     private byte[] lf_cr_b = lf_cr_str.getBytes();
@@ -40,52 +61,154 @@ public class PclPrint {
     //private static byte[] b4w_b = getRasterBlockCode(DEFAULT_NUM);
 
     public static void main(String[] args) throws IOException {
-        PclPrint pclPrint = new PclPrint();
-        pclPrint.genePclFile();
+
+        PclPrint pclPrint = new PclPrint("10.0.6.166");
+        byte[] data = pclPrint.generateImages("d:/test_1.xls");
+        BufferedImage sourceImage = ImageIO.read(new BufferedInputStream(new ByteArrayInputStream(data)));
+        BufferedImage image = ImagePixelUtil._24to1bit(sourceImage);
+        pclPrint.printSingleImage(image);
+
     }
 
+    public PclPrint setImageFormate(OutputStream os, ImageSetting settings) throws IOException {
+        //Move the cursor to PCL Unit position
+        //(300, 400) within the PCL coordinate
+        //system.
+        os.write(esc_b);
+        os.write(star);
+        os.write(112);
+        os.write(fromHexStrtoByteArr(stringToAsciiHex(String.valueOf(settings.getX()))));
+        os.write(120);
+        os.write(fromHexStrtoByteArr(stringToAsciiHex(String.valueOf(settings.getY()))));
+        os.write(89);
+        // ESC*r#F  Print raster graphics in the orientation of the logical page.
+        //  #  the  value of the orientation # = 0,3
+        os.write(esc_b);
+        os.write(star);
+        os.write(114);
+        os.write(48);
+        os.write(70);
+
+        //ESC*t#R set the image dpi
+        // # the value of dpi (100,150,200,300,600)
+
+        os.write(esc_b);
+        os.write(star);
+        os.write(116);
+        os.write(fromHexStrtoByteArr(stringToAsciiHex(String.valueOf(settings.getDpi()))));
+        os.write(82);
+
+        // ESC*r#S  set the image width
+        // # the value of iamge width
+
+        os.write(esc_b);
+        os.write(star);
+        os.write(114);
+        os.write(fromHexStrtoByteArr(stringToAsciiHex(String.valueOf(settings.getWidth()))));
+        os.write(83);
+
+        // ESC*r#T  SET THE image height
+        // # the value of iamge height
+
+        os.write(esc_b);
+        os.write(star);
+        os.write(114);
+        os.write(fromHexStrtoByteArr(stringToAsciiHex(String.valueOf(settings.getHeight()))));
+        os.write(84);
+
+        //Set the left graphics margin to the current
+        //X(300) position
+        os.write(esc_b);
+        os.write(star);
+        os.write(fromHexStrtoByteArr(stringToAsciiHex(String.valueOf(settings.getY()))));
+        os.write(65);
+
+        //   ESC*b#Y   This specifies a Y offset
+        //   # the value of the offset in positive y coordinate #=0-3172
 
 
-    public void doPrint() throws IOException {
-        Socket socket = new Socket();
-        socket.connect(new InetSocketAddress("10.128.7.190", 9100));
-        try (OutputStream os = socket.getOutputStream(); BufferedOutputStream bos = new BufferedOutputStream(os);) {
-            InputStream ins = new FileInputStream("d:/doc/hhhhhhhhhhhhhhhhhhhhhhhh.pcl");
-            int len = 0;
-            byte buff[] = new byte[2048];
-            while ((len = ins.read(buff)) != -1) {
-                bos.write(buff, 0, len);
-            }
-            bos.flush();
+        os.write(esc_b);
+        os.write(star);
+        os.write(98);
+        os.write(48);
+        os.write(89);
 
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        //   ESC*b#M  Specify the raster compression mode:
+        //   # the value of the compression mode
+
+        os.write(esc_b);
+        os.write(star);
+        os.write(98);
+        os.write(fromHexStrtoByteArr(stringToAsciiHex(String.valueOf(settings.getOrientation()))));
+        os.write(77);
+
+        return this;
+
+    }
+
+    class ImageSetting {
+        final int width;
+        final int height;
+        int dpi = 75;
+        int x = 0;
+        int y = 0;
+        int orientation = 0;
+
+        public ImageSetting(int width, int height) {
+            this.width = width;
+            this.height = height;
+        }
+
+        public int getWidth() {
+            return width;
+        }
+
+        public int getHeight() {
+            return height;
+        }
+
+        public int getDpi() {
+            return dpi;
+        }
+
+        public void setDpi(int dpi) {
+            this.dpi = dpi;
+        }
+
+        public int getX() {
+            return x;
+        }
+
+        public void setX(int x) {
+            this.x = x;
+        }
+
+        public int getY() {
+            return y;
+        }
+
+        public void setY(int y) {
+            this.y = y;
+        }
+
+        public int getOrientation() {
+            return orientation;
+        }
+
+        public void setOrientation(int orientation) {
+            this.orientation = orientation;
         }
     }
 
-    public void genePclFile() {
-        PclPrint pclPrint = new PclPrint();
-        try {
-            //InputStream in = new FileInputStream("E:\\workspace\\idea\\Net\\src\\main\\resources\\1-test_3.bmp");
-            InputStream in = new FileInputStream("d:/doc/test_1.png");
-            InputStream prefix = new FileInputStream("d:/test_2.pcl");
-            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream("d:/doc/hhhhhhhhhhhhhhhhhhhhhhhh.pcl"));
-            int len = 0;
-            byte[] buffer = new byte[2048];
-            while ((len = prefix.read(buffer)) != -1) {
-                bos.write(buffer, 0, len);
-            }
-            handImage(in, bos);
-            pclPrint.end(bos);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void printSingleImage(BufferedImage image) throws IOException {
+        ImageSetting settings = new ImageSetting(image.getWidth(), image.getHeight());
+        settings.setDpi(150);
+        init(bos)
+                .setImageFormate(bos, settings)
+                .handImage(image, bos)
+                .end(bos);
     }
+
 
     /**
      * 根据设置的值获取图片压缩指令
@@ -101,7 +224,7 @@ public class PclPrint {
     /**
      * 可手动设置初始设置
      */
-    private void init(OutputStream bos) throws IOException {
+    private PclPrint init(OutputStream bos) throws IOException {
         bos.write(uel_b);
         bos.write(prj_str.getBytes());
         bos.write(lf_cr_b);
@@ -110,28 +233,7 @@ public class PclPrint {
         bos.write(enter_cmd.getBytes());
         bos.write(lf_cr_b);
         bos.write(reset_cmd_b);
-    }
-
-    /**
-     * 读取24位图，完成打印
-     *
-     * @param os
-     * @param ins
-     * @throws IOException
-     */
-    private void printJob(OutputStream os, InputStream ins) throws IOException {
-        BufferedImage image = ImageIO.read(ins);
-        BufferedImage bit = ImagePixelUtil._24to1bit(image);
-        int width = bit.getWidth();
-        int height = bit.getHeight();
-        int colNum = width / 4;
-        int colNumMol = width % 4;
-
-        int rowNum = height / 4;
-        int rowNumMol = height % 4;
-
-
-        os.write("````````PCL PRINT JOB``````````".getBytes());
+        return this;
     }
 
     private void end(OutputStream os) throws IOException {
@@ -144,9 +246,8 @@ public class PclPrint {
     /**
      * 将单色位图处理成可打印的数据
      */
-    public static void handImage(InputStream in, OutputStream baos) {
+    public PclPrint handImage(BufferedImage image, OutputStream baos) {
         try {
-            BufferedImage image = ImageIO.read(in);
             WritableRaster raster = image.getRaster();
             int width = image.getWidth();
             int height = image.getHeight();
@@ -187,7 +288,6 @@ public class PclPrint {
                     }
                     if (count_w++ == rowSize - 1 && mol == 0) {
                         count_w = 0;
-                        //strBuild.append("\r\n");
                         continue outer;
                     }
                 }
@@ -198,65 +298,14 @@ public class PclPrint {
                 count_w = 0;
                 int val = Integer.parseInt(sb.toString(), 2);
                 sb = new StringBuilder();
-                //strBuild.append(val+" "+"\r\n");
+                strBuild.append(val + " " + "\r\n");
                 baos.write(val);
             }
-            System.out.println(strBuild.toString());
-           /* if (null != data && data.length != 0) {
-                int index = 7;
-                int res = 0;
-                for (byte b : data) {
-
-                    if (index >= 0) {
-                        if (b != 0) {
-                            b = 1;
-                            res += (b << index--);
-                        }
-                    } else {
-                        res = 0;
-                        index = 7;
-
-                    }
-                }
-            }*/
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
 
-    public void geneCode(InputStream ins) {
-        try (FileOutputStream fos = new FileOutputStream("d:/doc/hhhhh.pcl")) {
-            BufferedOutputStream bos = new BufferedOutputStream(fos);
-            init(bos);
-            printJob(bos, ins);
-            end(bos);
-            bos.flush();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void test() {
-        try (FileInputStream fis = new FileInputStream("E:\\workspace\\idea\\pcl-viewer\\test\\owl.pcl")) {
-            Socket socket = new Socket("10.128.7.190", 9100);
-            OutputStream outputStream = socket.getOutputStream();
-            OutputStreamWriter writer = new OutputStreamWriter(outputStream);
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            byte[] buff = new byte[2048];
-            int len = 0;
-            while ((len = fis.read(buff)) != -1) {
-                baos.write(buff, 0, len);
-            }
-            byte[] bytes = baos.toByteArray();
-            System.out.println(bytes.length);
-            outputStream.write(bytes);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        return this;
     }
 
     /**
@@ -329,42 +378,51 @@ public class PclPrint {
 
     }
 
+    public byte[] generateImages(String sourcePath) {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            Workbook workbook = new Workbook(sourcePath);
+            List<Worksheet> worksheets = getAllWorksheets(workbook);
+            if (worksheets != null) {
+                for (Worksheet worksheet : worksheets) {
+                    if (worksheet.getCells().getCount() > 0 || worksheet.getCharts().getCount() > 0 || worksheet.getPictures().getCount() > 0) {
 
-    public void geneTemplate(){
-        String uelS = "1B 25 2D  31 32 33 34 35 58";
-        String lfS = "0A";
-        String lf_cr_str = " \r\n";
-        String prj_str = "@PJL ";
-        String enter_cmd = "@PJL ENTER LANGUAGE = PCL";
-        String comment_str = "@PJL COMMENT Beginning PostScript Job";
-        String reset_cmd = "1B 45";
-
-        byte esc_b = 27;
-        byte[] uel_b = fromHexStrtoByteArr(uelS);
-        byte[] lf_b = fromHexStrtoByteArr(lfS);
-        byte[] lf_cr_b = lf_cr_str.getBytes();
-        byte[] reset_cmd_b = fromHexStrtoByteArr(reset_cmd);
-        try (FileOutputStream fos = new FileOutputStream("d:/doc/hhhhh.pcl")) {
-            BufferedOutputStream bos = new BufferedOutputStream(fos);
-            bos.write(uel_b);
-            bos.write(prj_str.getBytes());
-            bos.write(lf_cr_b);
-            bos.write(comment_str.getBytes());
-            bos.write(lf_cr_b);
-            bos.write(enter_cmd.getBytes());
-            bos.write(lf_cr_b);
-            bos.write(esc_b);
-            bos.write("E".getBytes());
-            bos.write("````````PCL PRINT JOB``````````".getBytes());
-            bos.write(esc_b);
-            bos.write("E".getBytes());
-            bos.write(uel_b);
-            bos.flush();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+                        SheetRender sr = new SheetRender(worksheet, getImageOrPrintOptions());
+                        sr.toImage(0, baos);
+                    }
+                }
+            }
+            return baos.toByteArray();
+        } catch (Exception e) {
             e.printStackTrace();
         }
+        return null;
+    }
+
+    /**
+     * Returns all worksheets present in given workbook.
+     *
+     * @param workbook
+     * @return all worksheets present in given workbook.
+     */
+    private List<Worksheet> getAllWorksheets(final Workbook workbook) {
+        List<Worksheet> worksheets = new ArrayList<Worksheet>();
+        WorksheetCollection worksheetCollection = workbook.getWorksheets();
+        for (int i = 0; i < worksheetCollection.getCount(); i++) {
+            worksheets.add(worksheetCollection.get(i));
+        }
+        return worksheets;
+    }
+
+    /**
+     * Returns ImageOrPrintOptions for png images
+     *
+     * @return
+     */
+    private ImageOrPrintOptions getImageOrPrintOptions() {
+        ImageOrPrintOptions imgOptions = new ImageOrPrintOptions();
+        imgOptions.setImageType(ImageType.BMP);
+        imgOptions.setOnePagePerSheet(true);
+        return imgOptions;
     }
 
 }

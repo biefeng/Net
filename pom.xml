@@ -82,18 +82,18 @@
             <version>1.2.56</version>
         </dependency>
 
-       <!-- <dependency>
-            <groupId>com.google.android</groupId>
-            <artifactId>android</artifactId>
-            <version>4.0.1.2</version>
-            <scope>provided</scope>
-        </dependency>-->
+        <!-- <dependency>
+             <groupId>com.google.android</groupId>
+             <artifactId>android</artifactId>
+             <version>4.0.1.2</version>
+             <scope>provided</scope>
+         </dependency>-->
 
-       <!-- <dependency>
-            <groupId>net.sf.image4j</groupId>
-            <artifactId>image4j</artifactId>
-            <version>0.7zensight1</version>
-        </dependency>-->
+        <!-- <dependency>
+             <groupId>net.sf.image4j</groupId>
+             <artifactId>image4j</artifactId>
+             <version>0.7zensight1</version>
+         </dependency>-->
 
         <dependency>
             <groupId>commons-io</groupId>
@@ -161,7 +161,49 @@
             <scope>compile</scope>
         </dependency>
 
+
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+            <version>4.1.0</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>4.1.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml-schemas</artifactId>
+            <version>4.1.0</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>com.aspose</groupId>
+            <artifactId>aspose-cells</artifactId>
+            <version>19.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.aspose</groupId>
+            <artifactId>aspose-java-for-maven</artifactId>
+            <version>1.0</version>
+        </dependency>
+
+
+
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>AsposeJavaAPI</id>
+            <name>Aspose Java API</name>
+            <url>http://repository.aspose.com/repo/</url>
+        </repository>
+    </repositories>
 
     <build>
         <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->

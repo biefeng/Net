@@ -239,9 +239,50 @@ public class DirectProtocolPrintUtil {
         return baos.toByteArray();
     }
 
+
+    public void printCODE39(int x, int y, String content) throws IOException {
+        StringBuffer sb = new StringBuffer();
+        sb.append(position(x, y)).append("DIR 1\r\nALIGN 7\r\nBARSET \"CODE39\",2,1,3,120\r\n")
+                .append(barFont(10))
+                .append("\r\nPRBAR ").append("\"" + content + "\"");
+        baos.write(sb.toString().getBytes());
+    }
+
+    public String barFont(int fontHeight, int slant, int distance, int magHeight, int magWidth, int enlargement) {
+        StringBuffer sb = new StringBuffer();
+        sb.append("\r\nBARFONT ")
+                .append("\"" + FontName.UNIVERS + "\"")
+                .append("," + fontHeight)
+                .append("," + slant)
+                .append("," + distance)
+                .append("," + magHeight)
+                .append("," + magWidth)
+                .append("," + enlargement)
+                .append(" ON");
+        return sb.toString();
+    }
+
+    public String barFont(int fontHeight, int distance, int magHeight, int magWidth) {
+        return barFont(fontHeight, 0, distance, magHeight, magWidth, 100);
+    }
+
+    public String barFont(int fontHeight, int distance) {
+        return barFont(fontHeight, distance, 1, 1);
+    }
+
+    public String barFont(int fontHeight) {
+        return barFont(fontHeight, 6);
+    }
+
     public void print128A_BarCode(int x, int y, String code) throws IOException {
         StringBuffer sb = new StringBuffer(position(x, y));
         sb.append("BARSET \"CODE128\",2,1,3,120,1,3 \r\n ").append("PRBAR \"").append(code).append("\"\r\n");
+        baos.write(sb.toString().getBytes());
+    }
+
+    public void printUPCA_BarCode(int x, int y, String code) throws IOException {
+        StringBuffer sb = new StringBuffer(position(x, y));
+        sb.append("ALIGN 7\r\n").append("BARSET \"UPCA\",2,1,3,120,1,3 \r\n ").append("PRBAR \"").append(code).append("\"\r\n");
         baos.write(sb.toString().getBytes());
     }
 

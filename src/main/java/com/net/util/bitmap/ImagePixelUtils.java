@@ -1,11 +1,13 @@
 package com.net.util.bitmap;
 
+import pcl.PclPrint;
+
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.OutputStream;
+import java.io.*;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.Arrays;
 
 import javax.imageio.ImageIO;
@@ -423,6 +425,88 @@ public class ImagePixelUtils {
             sb.append("\n");
         }
         System.out.println(sb.toString());
+    }
+
+    /**
+     * 将单色位图处理成可打印的数据
+     */
+    public static void handImage(BufferedImage image, OutputStream baos) {
+        int DEFAULT_BYTE_LEN = 8;
+        try {
+            WritableRaster raster = image.getRaster();
+            int width = image.getWidth();
+            int height = image.getHeight();
+            int[] pixels = raster.getPixels(0, 0, width, height, new int[width * height]);
+
+            int count_8 = 0;
+            int nl = width % 256;
+            int nh = width / 256;
+            int mol = width % DEFAULT_BYTE_LEN;
+            int rowSize = width;
+            if (mol != 0) {
+                rowSize = width + DEFAULT_BYTE_LEN;
+            }
+            baos.write(27);
+            baos.write(42);
+            baos.write(33);
+            baos.write(nl);
+            baos.write(nh);
+            //byte[] b4w_ = getRasterBlockCode(mol == 0 ? byte_size : byte_size + 1);
+            int count_w = 0;
+            StringBuilder strBuild = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
+            outer:
+            for (int h = 0; h < height; h++) {
+                for (int w = 0; w < width; w++) {
+                    int off = h * width + w;
+                    if (count_w == 0) {
+
+                        //baos.write(b4w_);
+                        strBuild.append("b4w");
+                    }
+                    if (pixels[off] == 0) {
+                        sb.append("1");
+                    } else {
+                        sb.append("0");
+                    }
+
+                    if (count_8++ == DEFAULT_BYTE_LEN - 1) {
+                        int val = Integer.parseInt(sb.toString(), 2);
+                        baos.write(val);
+                        sb = new StringBuilder();
+                        count_8 = 0;
+                        strBuild.append(val + " ");
+                    }
+                    if (count_w++ == rowSize - 1 && mol == 0) {
+                        count_w = 0;
+                        continue outer;
+                    }
+                }
+                while (count_w++ < rowSize - 2) {
+                    sb.append("0");
+                }
+                count_8 = 0;
+                count_w = 0;
+                int val = Integer.parseInt(sb.toString(), 2);
+                sb = new StringBuilder();
+                strBuild.append(val + " " + "\r\n");
+                baos.write(val);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public static void main(String[] args) throws Exception {
+        Socket socket = new Socket();
+        //socket.connect(new InetSocketAddress("10.0.0.77", 9100));
+        //OutputStream outputStream = socket.getOutputStream();
+        OutputStream outputStream = new FileOutputStream("d:/aspose.prn");
+        outputStream.write(new byte[]{27, 51, 24});//设置行间距
+        outputStream.write(imagePixelToPosByte_24("d:/aspose.bmp", 33));
+        outputStream.flush();
+        outputStream.close();
     }
 }
 
