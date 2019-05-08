@@ -1,7 +1,7 @@
 package pcl;
 
 
-import com.aspose.cells.*;
+import org.apache.poi.ss.usermodel.Workbook;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -61,13 +61,9 @@ public class PclPrint {
     //private static byte[] b4w_b = getRasterBlockCode(DEFAULT_NUM);
 
     public static void main(String[] args) throws IOException {
-
-        PclPrint pclPrint = new PclPrint("10.0.6.166");
-        byte[] data = pclPrint.generateImages("d:/test_1.xls");
-        BufferedImage sourceImage = ImageIO.read(new BufferedInputStream(new ByteArrayInputStream(data)));
-        BufferedImage image = ImagePixelUtil._24to1bit(sourceImage);
-        pclPrint.printSingleImage(image);
-
+        PclPrint pclPrint = new PclPrint("10.0.6.100");
+        BufferedImage read = ImageIO.read(new File("d:/doc/test/hello-world.BMP"));
+        pclPrint.printSingleImage(read);
     }
 
     public PclPrint setImageFormate(OutputStream os, ImageSetting settings) throws IOException {
@@ -219,6 +215,11 @@ public class PclPrint {
         String s = stringToAsciiHex(String.valueOf(size));
         String result = "1B 2A 62 " + s + " 57";
         return fromHexStrtoByteArr(result);
+    }
+
+    private PclPrint pageCopy(OutputStream bos) throws IOException {
+        bos.write(1);
+        return this;
     }
 
     /**
@@ -378,7 +379,9 @@ public class PclPrint {
 
     }
 
-    public byte[] generateImages(String sourcePath) {
+
+
+   /* public byte[] generateImages(String sourcePath) {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             Workbook workbook = new Workbook(sourcePath);
             List<Worksheet> worksheets = getAllWorksheets(workbook);
@@ -398,12 +401,12 @@ public class PclPrint {
         return null;
     }
 
-    /**
+    *//**
      * Returns all worksheets present in given workbook.
      *
      * @param workbook
      * @return all worksheets present in given workbook.
-     */
+     *//*
     private List<Worksheet> getAllWorksheets(final Workbook workbook) {
         List<Worksheet> worksheets = new ArrayList<Worksheet>();
         WorksheetCollection worksheetCollection = workbook.getWorksheets();
@@ -413,16 +416,18 @@ public class PclPrint {
         return worksheets;
     }
 
-    /**
+    *//**
      * Returns ImageOrPrintOptions for png images
      *
      * @return
-     */
+     *//*
     private ImageOrPrintOptions getImageOrPrintOptions() {
         ImageOrPrintOptions imgOptions = new ImageOrPrintOptions();
         imgOptions.setImageType(ImageType.BMP);
         imgOptions.setOnePagePerSheet(true);
         return imgOptions;
-    }
+    }*/
+
+
 
 }

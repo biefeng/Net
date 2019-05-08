@@ -1,3 +1,4 @@
+/*
 package pcl;
 
 import java.io.BufferedInputStream;
@@ -19,29 +20,35 @@ import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 
 public class ExcelToHtml{
 
-	/**
+	*/
+/**
 	 * 文件对象
-	 */
+	 *//*
+
 	private File file = null;
 
-	/**
+	*/
+/**
 	 * 构造函数
 	 * 
 	 * @param file
 	 *            要读取的excel文件对象
-	 */
+	 *//*
+
 	public ExcelToHtml(File file) {
 
 		this.file = file;
 	}
-	/**
+	*/
+/**
 	 * 
 	 * 方法说明：找出该sheet页内所有的合并单元格
 	 * 
 	 * @param sheet
 	 * @param list
 	 * 
-	 */
+	 *//*
+
 	public void getCombineCell(HSSFSheet sheet, List<Region> list) {
 		// 获得一个 sheet 中合并单元格的数量
 		int sheetmergerCount = sheet.getNumMergedRegions();
@@ -53,7 +60,8 @@ public class ExcelToHtml{
 		}
 	}
 
-	/**
+	*/
+/**
 	 * 
 	 * 方法说明：构造
 	 * <td>标签
@@ -63,7 +71,8 @@ public class ExcelToHtml{
 	 * @param sb
 	 * @param value
 	 * 
-	 */
+	 *//*
+
 	public void createTD(List<Region> listCombineCell, int rowIndex,
 			int cellIndex, StringBuffer sb, String value) {
 
@@ -107,14 +116,16 @@ public class ExcelToHtml{
 
 	}
 
-	/**
+	*/
+/**
 	 * 
 	 * 方法说明：解析excel，生成html的table
 	 * 
 	 * @return
 	 * @throws Exception
 	 * 
-	 */
+	 *//*
+
 	public String parseExcelToHtml() throws Exception {
 
 		StringBuffer sb = new StringBuffer();
@@ -195,14 +206,16 @@ public class ExcelToHtml{
 		sb.append("</table>");
 		return sb.toString();
 	}
-	/**
+	*/
+/**
 	 * 
 	 * 方法说明：测试调用
 	 *
 	 * @param args
 	 * @throws Exception 
 	 *
-	 */
+	 *//*
+
 	public static void main(String[] args) throws Exception {
 		
 		File file = new File("D:/TEST_1.xls");
@@ -211,4 +224,4 @@ public class ExcelToHtml{
 
 		System.out.println(result);
 	}
-}
+}*/

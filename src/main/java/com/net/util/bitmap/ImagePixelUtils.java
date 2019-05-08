@@ -500,11 +500,11 @@ public class ImagePixelUtils {
 
     public static void main(String[] args) throws Exception {
         Socket socket = new Socket();
-        //socket.connect(new InetSocketAddress("10.0.0.77", 9100));
-        //OutputStream outputStream = socket.getOutputStream();
-        OutputStream outputStream = new FileOutputStream("d:/aspose.prn");
+        socket.connect(new InetSocketAddress("10.0.0.78", 9100));
+        OutputStream outputStream = socket.getOutputStream();
+        //OutputStream outputStream = new FileOutputStream("d:/aspose.prn");
         outputStream.write(new byte[]{27, 51, 24});//设置行间距
-        outputStream.write(imagePixelToPosByte_24("d:/aspose.bmp", 33));
+        outputStream.write(imagePixelToPosByte_24("d:/doc/test/hello-world.bmp", 33));
         outputStream.flush();
         outputStream.close();
     }
